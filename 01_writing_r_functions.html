@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Developing R Functions</title>
+    <meta charset="utf-8" />
+    <meta name="author" content=" Dr Heather Turner Research Software Engineering Fellow, University of Warwick, UK " />
+    <meta name="date" content="2022-12-30" />
+    <script src="libs/header-attrs-2.19/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="extra.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Developing R Functions
+]
+.author[
+### <br>Dr Heather Turner<br>Research Software Engineering Fellow, University of Warwick, UK<br>
+]
+.date[
+### 30 December 2022
+]
+
+---
+
+
+
+
+
+class: inverse middle
+
+# Developing R Functions
+
+---
+
+# Functions 
+
+Functions are defined by two components:
+
+ - the arguments of the function
+ - the body of the function that computes the result
+ 
+They are created using `function()`
+
+
+```r
+t_statistic &lt;- function(n) {
+    x &lt;- rnorm(n)
+    y &lt;- rnorm(n)
+    t.test(x, y)$statistic
+}
+```
+---
+
+# Specified Arguments
+
+*specified* arguments are those named in the function definition, e.g. 
+in `rnorm()`
+
+
+```r
+args(rnorm)
+```
+
+```
+# function (n, mean = 0, sd = 1) 
+# NULL
+```
+the arguments are `n`, `mean` and `sd`.
+
+`mean` and `sd` have been given default values in the function definition, but `n` has not, so the function fails if the user does not pass a value to `n`
+
+
+```r
+rnorm()
+```
+
+```
+# Error in rnorm(): argument "n" is missing, with no default
+```
+
+---
+
+# Name and Order of Arguments
+
+The user can pass objects to these arguments using their names or by supplying unnamed values in the right order
+
+
+```r
+rnorm(5, 1, 10)
+```
+
+```
+# [1] -5.265  2.836 -7.356 16.953  4.295
+```
+
+```r
+rnorm(5, sd = 10)
+```
+
+```
+# [1] -8.205  4.874  7.383  5.758 -3.054
+```
+
+So, naming and order is important! Some guidelines:
+
+- put compulsory arguments first, e.g. data
+- put rarely used arguments last, e.g. tolerance setting
+- use short but meaning argument names
+- if relevant, use the same argument names as similar functions
+
+---
+
+# Using Arguments
+
+Arguments are used as objects in the function code.
+
+A new environment is created each time the function is called, separate 
+from the global workspace.
+
+
+```r
+x &lt;- 1
+y &lt;- 3
+f &lt;- function(x, y){
+    a &lt;- 1
+    x &lt;- x + a
+    x + y
+}
+f(x, y)
+```
+
+```
+# [1] 5
+```
+
+```r
+x
+```
+
+```
+# [1] 1
+```
+
+```r
+a
+```
+
+```
+# Error in eval(expr, envir, enclos): object 'a' not found
+```
+---
+
+# Lexical Scoping
+
+If an object is not defined within the function, or passed in as an argument, R looks for it in the *parent environment* where the function was defined
+
+
+```r
+x &lt;- 1
+y &lt;- 3
+f &lt;- function(x){
+    x + y
+}
+f(x)
+```
+
+```
+# [1] 4
+```
+
+```r
+rm(y)
+f(x)
+```
+
+```
+# Error in f(x): object 'y' not found
+```
+It is safest to use arguments rather than depend on global variables! 
+
+---
+
+# Unspecified Arguments
+
+`...` or the *ellipsis* allow unspecified arguments to be passed to the function. 
+
+This device is used by functions that work with arbitrary numbers of objects, e.g. 
+
+```r
+args(sum)
+```
+
+```
+# function (..., na.rm = FALSE) 
+# NULL
+```
+
+```r
+sum(1, 4, 10, 2)
+```
+
+```
+# [1] 17
+```
+
+It can also be used to pass on arguments to another function, e.g.
+
+```r
+t_statistic &lt;- function(x, g, ...) {
+    t.test(x ~ g, ...)$stat
+}
+```
+
+---
+
+# Using `...`
+
+Arguments passed to ... can be collected into a
+list for further analysis
+
+
+```r
+f &lt;- function(...){
+    dots &lt;- list(...)
+    vapply(dots, mean, numeric(1), na.rm = TRUE)
+}
+x &lt;- 1
+y &lt;- 2:3
+f(x, y)
+```
+
+```
+# [1] 1.0 2.5
+```
+Similarly the objects could be concatenated using `c`
+
+
+---
+
+# Return Values
+
+By default, functions return the object created by the last line of code
+
+```r
+f &lt;- function(x) {
+    x &lt;- x + 1
+    log(x)
+}
+```
+
+Alternatively `return()` can be used to terminate the function and return
+a given object
+
+```r
+f &lt;- function(x) {
+    if (all(x &gt; 0)) return(log(x))
+    x[x &lt;= 0] &lt;- 0.1
+    log(x)
+}
+```
+
+Multiple objects can be returned in a list.
+
+---
+
+# Naming Functions
+
+As with arguments, function names are important:
+
+- use a name that describes what it returns (e.g. `t_statistic`) or what it does (e.g. `remove_na`)
+- try to use one convention for combining words (e.g. snake case `t_statistic` or camel case `tStatistic`)
+- avoid using the same name as other functions
+
+---
+
+# Side Effects
+
+A side-effect is a change outside the function that occurs when the
+function is run, e.g.
+
+- plot to the graphics window or other device
+- printing output to the console
+- write data to a file
+
+A function *can* have many side-effects and a return value, but it is 
+best practice to have a separate function for each task, e.g creating a 
+plot or a table.
+
+Writing to file is usually best done outside a function.
+
+---
+
+# Your Turn
+
+In the `qq_norm` chunk of `exercises.Rmd` there is some code to compute the 
+slope and intercept of the line to add to a quantile-quantile plot, comparing 
+sample quantiles against theoretical quantiles of a `\(N(0, 1)\)` distribution.
+
+Turn this code into a function named `qq_norm` taking the sample data as an 
+argument and returning the slope and intercept in a list.
+
+Run this chunk to source the function, then run the `normal-QQ` chunk which uses 
+the `qq_norm` function to compute parameters for an example plot.
+
+Copy `qq_norm` to the `qq` chunk and rename it `qq`. Add a new argument `fun` 
+to specify any quantile function (e.g. `qt`, `qf`, etc). Give it the default 
+value `qnorm`. Inside the function use `qfun &lt;- match.fun(fun)` to get 
+the quantile function matching `fun`, then use `qfun` instead of `qnorm` 
+to compute `q_theory`. Use `...` to pass on arguments to `qfun`.
+
+Run the `qq` chunk and test your function on the `t-QQ` chunk.
+
+---
+
+# Using Functions From Other Packages
+
+In our own functions (outside of packages), it is possible to use `library`
+
+
+```r
+scale_rows &lt;- function(X){
+    library(matrixStats)
+    X &lt;- X - rowMeans(X)
+    X/rowSds(X)
+}
+```
+
+But this loads the entire package, potentially leading to clashes with 
+functions from other packages. It is better to use the **import** package:
+
+
+```r
+scale_rows &lt;- function(X){
+    import::from(matrixStats, rowSds)
+    X &lt;- X - rowMeans(X)
+    X/rowSds(X)
+}
+scale_rows(matrix(1:12, nrow = 3))
+```
+
+???
+
+Then in our script we don't need to use `library(matrixStats)` for 
+`rowSds` to work (it must be installed though)!
+
+---
+
+# Custom ggplot
+
+**ggplot2**, like **dplyr** and other tidyverse packages, uses 
+*non-standard evaluation*, that is, it refers to variable names in a data frame as if 
+they were objects in the current environment
+
+
+```r
+ggplot(mtcars, aes(x = mpg, y= disp)) +
+    geom_point()
+```
+
+To emulate this, we have to need to **embrace** arguments
+
+
+```r
+ggscatter &lt;- function(data, x, y){
+    import::from(ggplot2, ggplot, aes, geom_point)
+    ggplot(data, aes(x = {{ x }}, y = {{ y }})) +
+        geom_point()
+}
+ggscatter(mtcars, x = mpg, y = disp)
+```
+
+---
+
+# Externalizing Function Code
+
+It is a good idea to separate function code from analysis code.
+
+Put related functions together and source as required
+
+```r
+source("modelFunctions.R")
+source("plotFunctions.R")
+```
+The **import** package enables only necessary, top-level functions to be 
+imported to the global workspace:
+
+```r
+import::here(poissonModel, quasiPoissonModel, .from = "modelFunctions.R")
+```
+
+In either case, `import::from` commands can be put outside the function
+body to make the code easier to read.
+
+---
+
+# Documenting Functions
+
+Comments help to record what a function does
+
+```r
+# reorder x by grouping variable g
+groupSort &lt;- function(x, g) {
+    ord &lt;- order(g) #indices for ascending order of g
+    x[ord]
+}
+```
+The **docstring** package enables *roxygen* comments to be turned into a 
+help file
+
+```r
+library(docstring)
+groupSort &lt;- function(x, g) {
+    #' Reorder a Vector by a Grouping Variable
+    #'
+    #' @param x a vector
+    #' @param g a grouping variable
+    ord &lt;- order(g) #indices for ascending order of g
+    x[ord]
+}
+```
+
+---
+
+# 
+
+
+```r
+?groupSort
+```
+
+![HTML documentation generated by docstring](docstring_help_file.png)
+
+For fuller documentation, see the **docstring** vignette.
+
+---
+
+# Validation
+
+When developing a function, we will want to validate its output.
+
+A simple approach is to try different inputs
+
+
+```r
+log_2 &lt;- function(x){
+    log(x, 2)
+}
+log_2(2^2)
+```
+
+```
+# [1] 2
+```
+
+```r
+log_2(2^0)
+```
+
+```
+# [1] 0
+```
+Doing this each time we change the function becomes tedious to check and 
+error-prone as we miss important tests.
+
+---
+
+# Unit testing
+
+The **testthat** packages allows us to create a test suite:
+
+
+```r
+context("log_2 works correctly")
+
+test_that("log_2 returns log to base 2", {
+    expect_equal(log_2(2^3), 3)
+    expect_equal(log_2(2^0), 0)
+})
+
+test_that("negative values give error", {
+    expect_error(log_2(2^-1))
+})
+```
+
+---
+
+# Running Tests
+
+If we save the tests in a file, e.g. `tests.R`, we can use `test_file()` 
+to run and check all tests:
+
+
+```r
+library(testthat)
+test_file("tests.R")
+```
+
+```
+# √ | OK F W S | Context
+# x |  2 1     | log_2 works correctly
+# --------------------------------------------------------------------------------
+# tests.R:9: failure: negative values give error
+# `log_2(2^-1)` did not throw an error.
+# --------------------------------------------------------------------------------
+# 
+# == Results =====================================================================
+# OK:       2
+# Failed:   1
+# Warnings: 0
+# Skipped:  0
+```
+
+
+---
+
+# Your Turn
+
+Copy the `qq` function to a new R script and save as `functions.R`. Add roxygen 
+comments at the start of the function body to define a title and parameter 
+documentation.
+
+Run the `documentation` chunk of `exercises.Rmd` to view your documentation.
+
+Open the `tests.R` script. Using `expect_equal` add some tests for the 
+following
+
+ - a sample of 100,000 from N(0, 1) gives approximately slope 1, intercept 0
+ - a sample of 100,000 from N(0, 1/2) gives approximately slope 2, intercept 0
+ - sample of 100,000 from N(2, 1) gives approximately slope 1, intercept -2
+
+Use the `tol` argument in `expect_equal` to set a tolerance of 0.01.
+
+Run the `tests` chunk of `exercises.Rmd` to run your tests with `test_file`. Try changing the expected 
+tolerance to get a test to fail.
+
+---
+
+class: inverse middle
+
+# Error Handling
+
+---
+
+# Sanity Checks
+
+To avoid mistakes, you may want to add some basic sanity checks
+
+
+```r
+logit &lt;- function(p){
+    stopifnot(p &gt; 0 &amp; p &lt; 1)
+    log(p/(1 - p))
+}
+logit(2)
+```
+
+```
+# Error in logit(2): p &gt; 0 &amp; p &lt; 1 is not TRUE
+```
+
+```r
+logit(0.5)
+```
+
+```
+# [1] 0
+```
+
+---
+
+# Error Messages
+
+Often the R messages can be quite obscure
+
+
+```r
+zap &lt;- function(x) if (max(x) &lt; 1e7) 0 else x
+x &lt;- c(1, 2, NA)
+zap(x)
+```
+
+```
+# Error in if (max(x) &lt; 1e+07) 0 else x: missing value where TRUE/FALSE needed
+```
+
+More helpful error message can be implemented using `stop`
+
+
+```r
+zap &lt;- function(x) {
+    if (any(is.na(x))) stop("missing values in x\nare", 
+                            " not allowed")
+    if (max(x) &lt; 1e7) 0 else x
+}
+zap(x)
+```
+
+```
+# Error in zap(x): missing values in x
+# are not allowed
+```
+
+---
+
+# Warning Messages
+
+Warning messages should be given using `warning()`
+
+
+```r
+safe_log2 &lt;- function(x) {
+    if (any(x == 0)) {
+        x[x == 0] &lt;- 0.1
+        warning("zeros replaced by 0.1")
+    }
+    log(x, 2)
+}
+safe_log2(0:1)
+```
+
+```
+# Warning in safe_log2(0:1): zeros replaced by 0.1
+```
+
+```
+# [1] -3.322  0.000
+```
+
+Other messages can be printed using `message()`.
+
+---
+
+# Suppressing Warnings
+
+If a warning is expected, you may wish to suppress it
+
+
+```r
+log(c(3, -1))
+```
+
+```
+# Warning in log(c(3, -1)): NaNs produced
+```
+
+```
+# [1] 1.099   NaN
+```
+
+```r
+x &lt;- suppressWarnings(log(c(3, -1)))
+```
+
+All warnings will be suppressed however!
+
+Similarly `suppressMessages()` will suppress messages.
+
+
+---
+
+# Catching Errors/Warnings
+
+The **purrr** package has various functions to catch issues.
+
+`possibly()` lets you modify a function to return a specified value when there 
+is an error
+
+```r
+log("a")
+```
+
+```
+# Error in log("a"): non-numeric argument to mathematical function
+```
+
+```r
+library(purrr)
+poss_log &lt;- possibly(log, otherwise = NA)
+poss_log("a")
+```
+
+```
+# [1] NA
+```
+`safely()` works in a similar way but returns a list with elements `"result"` 
+and `"error"`, so you can record the error message(s). 
+
+`quietly()` lets you modify a function to return printed output, warnings and 
+messages along with the result.
+
+---
+
+# `traceback()`
+
+When an unexpected error occurs, there are several ways to track down the source of the error, e.g. `traceback()`
+
+
+```r
+f1 &lt;- function(x){ f2(x) }
+f2 &lt;- function(x){ x + qqqq }
+f1(10)
+```
+
+```
+# Error in f2(x): object 'qqqq' not found
+```
+
+
+```r
+traceback()
+```
+
+```
+# 2: f2(2) at #1
+# 1: f1(10)
+```
+
+In RStudio, if `Debug &gt; On Error &gt;  Error Inspector` is checked and the 
+traceback has at least 3 calls, the option to show traceback is presented
+
+![RStudio error inspector giving options to show traceback or rerun with debug](error_inspector.png)
+???
+
+Note here about the importance of separating tasks into smaller functions
+- easier to debug!
+
+---
+
+# `debugonce()`
+
+`debugonce()` flags a function for debugging the next time it is called
+
+
+```r
+debugonce(f2)
+f1(10)
+```
+
+```
+# Error in f2(x): object 'qqqq' not found
+```
+
+```
+# debugging in: f2(2)
+# debug at #1: {
+#     x + qqqq
+# }
+# Browse[2]&gt; ls()
+# [1] "x"
+# Browse[2]&gt; Q
+```
+
+When in debug mode type `n` or &lt;kbd title = "enter"&gt;&amp;#8629;&lt;/kbd&gt; to step 
+to the next line and `c` to continue to the end of a loop or the end of the function.
+
+---
+
+# Breakpoints
+
+Stepping through a function line by line can be tedious. In RStudio we 
+can set custom breakpoints in the source pane
+
+.pull-left[
+Set breakpoint in RStudio
+![](set_breakpoint.png)
+]
+.pull-right[
+Source the code
+![](debug_source.png)
+]
+
+---
+
+&lt;br&gt;
+
+Start debugging from breakpoints
+
+![](jump_to_breakpoint.png)
+???
+`n` is automatically printed, so the first prompt is at the breakpoint
+
+---
+
+# RStudio's Rerun with Debug
+
+The `Rerun with Debug` option will rerun the command that created the 
+error and enter debug mode where the error occurred.
+
+Good points:
+ - Easy to enter debug mode (when option shown)
+ - Can click in Traceback pane to view objects at any point in the call stack
+ 
+Bad points:
+ - May have gone past source of error (use breakpoints instead)
+ - May enter deeply nested function: use `recover()` to select an earlier 
+ entry point
+
+Alternatively use `options(error = recover)`, 
+run code to debug, then set `options(error = NULL)`.
+
+---
+
+# Your Turn
+
+Open the function `debug_practice.R` and source the example function `f`.
+
+Try to run `f(10)` - there's an error! Use `traceback()` to see which 
+function call generated the error, then fix the problem. 
+
+Run `f(10)` again - there is another error! Can you fix this directly?
+
+Try running `f(1)` - is the result what you expected? Use `debugonce()` to 
+setting debugging on `f()` and re-run `f(1)`. Step through the function,
+printing each object as it is created to see what is happening.
+
+Can you think how to improve the function? See if you can modify the 
+function to give a sensible result for any integer.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="libs/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "googlecode",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
