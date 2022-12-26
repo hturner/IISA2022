@@ -8,7 +8,7 @@ Writing functions in R enables you to work more efficiently by writing code for 
 
 ## Outline
 
-1. Writing R Functions
+1. Developing R Functions
 
  * Components of a function and design considerations
  * Using functions from other packages in your functions
