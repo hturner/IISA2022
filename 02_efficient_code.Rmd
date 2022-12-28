@@ -95,10 +95,10 @@ large CSVs
  - **bigmemory**, **biganalytics** faster matrix operations,
 generalized linear models, kmeans
 
-Parallelisation can also help, see later.
-
 ???
 N.B. sparse matrices not as efficient as you might expect for general programming, may need big data for it to be important.
+
+Parallelisation can also help, see later [no longer covered in this section]
 
 ---
 
@@ -146,6 +146,12 @@ for (i in 1:2){z[i] <- i;print(tracemem(z))}
 makes copy for each separate block of code
 e.g. if run with above in one go interactively no copies
      if run in separate chunks 1 copy
+     
+---
+
+class: inverse middle
+
+# Benchmarking
 
 ---
 
@@ -245,14 +251,20 @@ res2 <- coef(lm(t(X) ~ grp))
 
 ---
 
-# Fast options for common operations
+class: inverse middle
+
+# Improving run time
+
+---
+
+# Faster functions for common operations
 
 * Sorting
  - Use `sort(x, partial = 1:10)` to get the top 10
  - Use `sort(x, decreasing = TRUE)` vs `rev(sort(x))`
 * Generating numeric vectors
- - `seq.int()` vs `seq()` or `seq_along(x)`, `seq_len(n)` for special cases
- - `rep.int()` vs `rep()` or `rep_len(n)`
+ - `seq.int()`, `seq_along(x)`, `seq_len(n)` vs `seq()`
+ - `rep.int()` or `rep_len(n)` vs `rep()` 
 * `which.min()` and `which.max()` vs e.g. `which(x == min(x))`
 * `anyNA(x)` vs `any(is.na(x))`
 
@@ -286,24 +298,7 @@ y <- 3:1
 x == y
 x + y
 ``` 
-
----
-
-# Vectorization and Matrices
-
-Vectorization applies to matrices too, not only through matrix algebra
-
-```{r matrixAlg}
-M <- matrix(1:4, nrow = 2, ncol = 2)
-M + M
-```   
-
-but also vectorized functions
-
-```{r vectorizedM}
-M <- M + rep(1.3, 4)
-round(M)
-``` 
+We do not need to loop through every element!
 
 ---
 
@@ -375,149 +370,285 @@ Make sure the vectors are of length 1, otherwise only the first element is compa
 x > 0.4 && x < 0.8
 ```
 
-
 ---
 
-# `apply`
-`apply` provides a way to apply a function to every row or column of a matrix
-```{r apply}
-M <- matrix(1:20, 2, 10)
-apply(M, 1, quantile, 0.75)
-apply(M, 2, mean)
+# Vectorization and Matrices
+
+Vectorization applies to matrices too, not only through matrix algebra
+
+```{r matrixAlg}
+M <- matrix(1:4, nrow = 2, ncol = 2)
+M + M
+```   
+
+but also vectorized functions
+
+```{r vectorizedM}
+M <- M + rep(1.3, 4)
+round(M)
 ``` 
 
 ---
 
-# `lapply`
+# Matrices and Recycling
 
-`lapply` applies a given function to each element of a list
-```{r lapply}
-l <- list()
-l$x <- 1:3
-l$y <- 4:6
-lapply(l, mean)
-``` 
+Values are recycled down matrix, which is convenient for 
+row-wise operations
 
----
-
-# `sapply` and `vapply`
-
-`sapply` acts similarly to `lapply`, but tries to simplify the result
-```{r sapply}
-sapply(l, mean)
-``` 
-
-It is better to use `vapply` in programming as it ensures the returned object is of the expected type (and is slightly faster)
-
-```{r vapply}
-vapply(l, mean, numeric(1))
-``` 
-
+```{r}
+M <- matrix(1:6, nrow = 2, ncol = 3)
+M
+M - 1:2
+```
+To do the same for columns we would need to explicitly replicate, 
+which is not so efficient.
+```{r}
+M - rep(1:3, each = 2)
+```
 
 ---
 
-# Matrix Methods 
+# Row/Column-wise Operations
 
-Functions such as `apply` are very general. R provides fast
-implementations for special cases
-```{r matMeth}
-colMeans(M)
+Several functions are available implementing efficient row/column-wise
+operations, e.g. `colMeans()`, `rowMeans()`, `colSums()`, `rowSums()`, `sweep()`
+
+```{r}
+M <- matrix(1:4, nrow = 2, ncol = 2)
 rowMeans(M)
-colSums(M)
-rowSums(M)
-```   
-
----
-
-# More Matrix Methods
-`rowsum` sums over rows within each level of a grouping variable
-```{r rowsum}
-M <- matrix(1:8, 4)
-rowsum(M, rep(1:2, each = 2))
-``` 
-The packages `matrixStats` provides even more "matricized"
-operations, including medians and standard deviations
-```{r matrixStats}
-library(matrixStats); colMedians(M)
 ```
-```{r matrixStats2}
-rowSds(M)
-```  
+
+These provide an alternative to iterating though rows and columns in R (the 
+iteration happens in C, which is faster).
+
+The **matrixStats** provides further "matricized" methods, , including medians and standard deviations.
 
 ---
 
-class: inverse middle
+# Case Study (h/t Raju Bhakta)
 
-# Parallelisation
+Consider the following code to generate random values from the mixture distribution 0.3 × N(0, 1) + 0.5 × N(10, 1) + 0.2 × N(3, 0.1)
 
-???
+```{r}
+# Set the random seed and the number of values to sample
+set.seed(1)
+n <- 100000                 
 
-https://henrikbengtsson.github.io/future-tutorial-user2022/an-overview-of-the-futureverse.html#quick-intro-parallel-base-r-apply
+# Sample the component each value belongs to
+component <- sample(1:3, prob = c(0.3, 0.5, 0.2),
+                    size = n, replace = TRUE)
 
----
-
-# Parallelisation
-
-Most functions in R run on a single core of your machine. The 
-**parallel** package, part of the default R distribution, provides 
-parallel versions of the `apply`-type functions.
-
-Parallelisation is most straight-forward to implement for
-*embarrassingly parallel* problems, such as applying a function to
-elements of a list.
-
-The first step is to make a cluster from the available cores, here 2
-```{r makeCluster}
-library(parallel)
-clus <- makeCluster(2)
-``` 
-You can use `parallel::detectCores() - 1` on your own computer; `parallelly::availableCores() - 1` is safer to use in general.
-
----
-
-# parApply on Multiple Cores
-
-`parApply` is used exactly as `apply`, but has an additional
-argument to specify the cluster on which to run the code
-```{r parApply}
-res <- parApply(clus, M, 1, quantile, 0.75)
+# Sample from the corresponding Normal for each value
+x <- numeric(n)
+for(i in seq_len(n)){
+  if (component == 1){
+    x[i] <- rnorm(1, 0, 1)
+  } else if (component == 2) {
+    x[i] <- rnorm(1, 10, 1)
+  } else {
+    x[i] <- rnorm(1, 3, sqrt(0.1))
+  }
+}
 ```
-There are also special versions for applying to rows (R) and cols (C)
-```{r parRapply}
-res <- parRapply(clus, M, quantile, 0.75)
-res <- parCapply(clus, M, mean)
-```   
 
----
-
-# parLapply and parSapply
-
-Similarly `parLapply` and `parSapply` mirror `lapply` and `sapply`
-```{r parLapply}
-parLapply(clus, l, mean)
-```
-```{r parLapply2}
-parSapply(clus, l, mean)
-``` 
-Any number of R commands can be run after the cluster has been created. At the end, run
-```{r stopClus}
-stopCluster(clus)
-``` 
+We can use vectorization to avoid this for loop!
 
 ---
 
 # Exercise 2
 
-The **efficient** package contains a function to simulate a game of snakes and 
-ladders, returning the number of rolls required to win.
+`rnorm` is vectorized in the arguments `mu` and `sd`, e.g. to simulate a value from the 1st and 3rd component we could write:
 
-
-Parallelise the following code:
 ```{r}
-library(efficient)
-N <- 10
-nrolls <- sapply(seq_len(N), snakes_ladders)
+mu <- c(0, 10, 3)
+sd <- sqrt(c(1, 1, 0.1))
+rnorm(2, mu[c(1, 3)], sd[c(1, 3)])
 ```
+
+Use this information to replace the for loop on the last slide, using a single call to `rnorm` to simulate `n` values from the mixture distribution.
+
+Use `bench::mark()` to compare the two approaches - don't forget to set the same seed so the simulations are equivalent!
+
+---
+
+class: inverse middle
+
+# Profiling
+
+---
+
+# Profiling code
+
+To make our code more efficient, we first need to identify the bottlenecks, in 
+terms of time and/or memory usage.
+
+Profiling stops the execution of code every few milliseconds and records 
+ - The call stack: the function currently being executed, the function that it 
+ was called from and so on up to the top-level function call.
+ - The memeory allocated and released since the last record.
+ 
+We will use the **profvis** package to visualise profiling results.
+ 
+---
+
+# Example: nested pause functions
+
+The following code is saved in `profiling-example.R` and uses `profvis::pause` 
+to wait 0.1s inside each function
+
+```r
+top_level <- function() {
+  profvis::pause(0.1)
+  middle_level()
+  bottom_level()
+}
+middle_level <- function() {
+  profvis::pause(0.1)
+  bottom_level()
+}
+bottom_level <- function() {
+  profvis::pause(0.1)
+}
+```
+???
+`Sys.sleep()` can not be used as it would not show in profiling output
+
+---
+
+# Using profvis
+
+Source the code to be profiled and pass the function call to be profiled to 
+`profvis()`
+```{r, eval = FALSE}
+library(profvis)
+source("profiling-example.R")
+profvis(top_level())
+```
+
+An interactive HTML document will open with the results.
+
+In RStudio this will open in the source pane, click "show in new window" button to open the document in a new window.
+
+---
+
+class: middle
+
+![:scale 80%, Screenshot of the profvis HTML output. At the bottom, a stacked set of horizontal bars along a time axis, representing the length of time in each function. At a given time, the top-level function is at the bottom of the stack with each nested function stacked on top. The source code is shown at the top of the screenshot, with a horizontal bar for each line, showing the time spent. Interpretation on next slide](profiling-example.png)
+---
+
+# Interpretation
+
+The bottom plot is called a *flame graph*. The yellow bars correspond to lines in the source file shown above this graph, for which time has been recorded.
+
+In the overall time of 250ms we see 
+ - 4 equal-sized blocks for each pause of 0.1s
+ - Nearly all time is spent in the top-level function
+ - Nearly half the time is spent in the mid-level function
+ - Nearly half the time is also spent in the bottom-level function as it is called twice
+ - There is one sample where the `cmp` function is being executed (called by `compiler:::tryCmpfun`). When a function is first called, R attempts to compile it to byte code so that it can call the compiled version in subsequent calls.
+ 
+No changes in memory are recorded as no objects are created or deleted.
+
+---
+
+# Data tab
+
+The Data tab shows a table with the memory and time usage for each function call. The nested calls can be expanded/collapsed to show/hide the corresponding lines.
+![:scale 75%, Screenshot of the data tab in the profvis HTML output. A table with columns "Code" (function name), "File" (name of source file containing function), "Memory (MB)" and "Time (ms)".](profiling-example-data-tab.png)
+
+---
+
+# Memory profiling
+
+To illustrate memory profiling we can consider a loop that concatenates values.
+
+As it is a small code snippet, we can pass to profvis directly
+
+```{r, eval = FALSE}
+profvis({
+  x <- integer()
+  for (i in 1:10000) {
+    x <- c(x, i)
+  }
+})
+```
+
+---
+
+![Flame graph for profiling the contenation example. Interpretation on next slide.](profiling-memory.png)
+---
+
+# `<GC>`
+
+As expected, the majority of the time is spent within `c()`, but we also see a lot time spent in `<GC>`, the garbage collector.
+
+In the memory column next to the corresponding line in the source code, we see a bar to left labelled -123.0 and a bar to the right labelled 137.2. This means that 137 MB of memory was allocated and 123 MB of memory was released.
+
+This is because each call to `c()` causes a new copy of `x` to be created.
+
+Memory profiling can help to identify short-lived objects that might be avoided by changes to the code.
+
+---
+
+# General principles
+
+
+* Avoid optimizing too soon
+  - Get the code right first.
+  - Write tests to validate changes to the code
+* Avoid over-optimization
+  - Focus on the bottlenecks
+  - Keep an eye on the units - will real gains be made?
+  - Think about maintainability: readability, simplicity, dependencies
+* Avoid anonymous functions
+  - Name utility functions to see them in the profile
+* Use microbenchmarking to assess alternative implementations
+  
+---
+
+# Monopoly
+
+.pull-left-66[In the monopoly board game, players roll two die to move round the board. Players buy assets on which they can charge rent or taxes and aim to make the most money.
+
+The squares on the board represent
+- Properties, train stations or utility companies to buy
+- Events that trigger an action, e.g. paying a tax or going to jail
+
+The *efficient* package contains the `simulate_monopoly()` function to simulate game play, which we'll use to practice profiling.]
+.pull-right-33[
+<br>
+<br>
+![Photo showing part of the monopoly game board, from the corner with the "Go" square.](monopoly.jpg)
+]
+
+---
+
+# Your Turn
+
+1. Install the **efficient** package with the following code to keep the code source files:
+```r
+remotes::install_github("csgillespie/efficient",
+                         INSTALL_opts = "--with-keep.source")
+```
+2. Use `profvis()` to profile `simulate_monopoly(10000)`. Explore the output. Which parts of the code are slow?
+3. Most of the time is spent in the underlying function `move_square()`. Use `View(move_square)` to view the source code. Make two copies of the code in separate .R files and name the functions `move_square` and `move_square2`. Edit `move_square2` to speed up the slow parts of the code. (Go to next slide for testing the updates)
+
+---
+
+Use `bench::mark()` to test your changes. Create a wrapper for each function to run it `n` times with different seeds, e.g.
+```{r, eval = FALSE}
+run_move_square <- function(n){
+  x <- numeric(n)
+  for (i in 1:n) {
+    set.seed(i)
+    x[i] <- move_square(1)
+  }
+  x
+}
+```
+Then run `bench::mark(run_move_square(n), run_move_square2(n))` for suitable `n`. This ensures the new code gives the same results!
+
+When you think you have done as much improvement as you can, compare `profvis(run_move_square2(10000))` with `profvis(run_move_square(10000))`.
 
 ---
 

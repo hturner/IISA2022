@@ -79,10 +79,10 @@ large CSVs
  - **bigmemory**, **biganalytics** faster matrix operations,
 generalized linear models, kmeans
 
-Parallelisation can also help, see later.
-
 ???
 N.B. sparse matrices not as efficient as you might expect for general programming, may need big data for it to be important.
+
+Parallelisation can also help, see later [no longer covered in this section]
 
 ---
 
@@ -122,9 +122,9 @@ for (i in 1:3){ z &lt;- c(z,1); print(tracemem(z)) }
 ```
 
 ```
-# [1] "&lt;000001CE951C0FC8&gt;"
-# [1] "&lt;000001CE95983EC8&gt;"
-# [1] "&lt;000001CE96B1CEB8&gt;"
+# [1] "&lt;000002AE5303FE58&gt;"
+# [1] "&lt;000002AE50F45AC8&gt;"
+# [1] "&lt;000002AE5C42F828&gt;"
 ```
 
 ```r
@@ -132,7 +132,7 @@ z &lt;- numeric(2); print(tracemem(z))
 ```
 
 ```
-# [1] "&lt;000001CE95731CD8&gt;"
+# [1] "&lt;000002AE50F4EB08&gt;"
 ```
 
 
@@ -141,9 +141,9 @@ for (i in 1:2){z[i] &lt;- i;print(tracemem(z))}
 ```
 
 ```
-# tracemem[0x000001ce95731cd8 -&gt; 0x000001ce96bee768]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call &lt;Anonymous&gt; evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file &lt;Anonymous&gt; &lt;Anonymous&gt; do.call rebuild build force toJSON doTryCatch tryCatchOne tryCatchList tryCatch &lt;Anonymous&gt; handler doTryCatch tryCatchOne tryCatchList tryCatch try &lt;Anonymous&gt; evalq evalq doTryCatch tryCatchOne tryCatchList doTryCatch tryCatchOne tryCatchList tryCatch 
-# [1] "&lt;000001CE96BEE768&gt;"
-# [1] "&lt;000001CE96BEE768&gt;"
+# tracemem[0x000002ae50f4eb08 -&gt; 0x000002ae50fb1148]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call &lt;Anonymous&gt; evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file &lt;Anonymous&gt; &lt;Anonymous&gt; do.call rebuild build force toJSON doTryCatch tryCatchOne tryCatchList tryCatch &lt;Anonymous&gt; handler doTryCatch tryCatchOne tryCatchList tryCatch try &lt;Anonymous&gt; evalq evalq doTryCatch tryCatchOne tryCatchList doTryCatch tryCatchOne tryCatchList tryCatch 
+# [1] "&lt;000002AE50FB1148&gt;"
+# [1] "&lt;000002AE50FB1148&gt;"
 ```
 
 ???
@@ -151,6 +151,12 @@ for (i in 1:2){z[i] &lt;- i;print(tracemem(z))}
 makes copy for each separate block of code
 e.g. if run with above in one go interactively no copies
      if run in separate chunks 1 copy
+     
+---
+
+class: inverse middle
+
+# Benchmarking
 
 ---
 
@@ -196,8 +202,8 @@ library(bench)
 # # A tibble: 2 × 6
 #   expression             min   median `itr/sec` mem_alloc `gc/sec`
 #   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-# 1 grow(5000)            74ms   86.1ms      10.9    95.6MB    45.5 
-# 2 pre_specify(5000)    168µs  197.7µs    4437.     56.1KB     8.00
+# 1 grow(5000)            57ms   86.8ms      10.7    95.6MB    33.9 
+# 2 pre_specify(5000)    163µs  195.4µs    4203.     55.8KB     4.00
 ```
 
 * `GC` is the garbage collector which tidies up objects are deleted
@@ -267,10 +273,10 @@ bench::press(
 # # A tibble: 4 × 8
 #   expression                  n     k    min median itr/s…¹ mem_a…²
 #   &lt;bch:expr&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;bch:&gt; &lt;bch:&gt;   &lt;dbl&gt; &lt;bch:b&gt;
-# 1 gl(n, k, length = 1000)    10    10  7.2µs  9.2µs 100616.  4.39KB
-# 2 gl(n, k, length = 1000)   100    10 16.9µs 24.6µs  34161. 11.05KB
-# 3 gl(n, k, length = 1000)    10     1  6.5µs  8.9µs  90605.  3.95KB
-# 4 gl(n, k, length = 1000)   100     1 12.6µs 15.3µs  50470.  7.53KB
+# 1 gl(n, k, length = 1000)    10    10    7µs  8.9µs 100427.  4.39KB
+# 2 gl(n, k, length = 1000)   100    10 16.1µs 24.4µs  36312. 11.05KB
+# 3 gl(n, k, length = 1000)    10     1  6.8µs  7.7µs 110569.  3.95KB
+# 4 gl(n, k, length = 1000)   100     1 13.2µs 14.7µs  57511.  7.53KB
 # # … with 1 more variable: `gc/sec` &lt;dbl&gt;, and abbreviated variable
 # #   names ¹​`itr/sec`, ²​mem_alloc
 ```
@@ -662,96 +668,185 @@ rowSds(M)
 
 class: inverse middle
 
-# Parallelisation
+# Profiling
 
+---
+
+# Profiling code
+
+To make our code more efficient, we first need to identify the bottlenecks, in 
+terms of time and/or memory usage.
+
+Profiling stops the execution of code every few milliseconds and records 
+ - The call stack: the function currently being executed, the function that it 
+ was called from and so on up to the top-level function call.
+ - The memeory allocated and released since the last record.
+ 
+We will use the **profvis** package to visualise profiling results.
+ 
+---
+
+# Example: nested pause functions
+
+The following code is saved in `profiling-example.R` and uses `profvis::pause` 
+to wait 0.1s inside each function
+
+```r
+top_level &lt;- function() {
+  profvis::pause(0.1)
+  middle_level()
+  bottom_level()
+}
+middle_level &lt;- function() {
+  profvis::pause(0.1)
+  bottom_level()
+}
+bottom_level &lt;- function() {
+  profvis::pause(0.1)
+}
+```
 ???
-
-https://henrikbengtsson.github.io/future-tutorial-user2022/an-overview-of-the-futureverse.html#quick-intro-parallel-base-r-apply
-
----
-
-# Parallelisation
-
-Most functions in R run on a single core of your machine. The 
-**parallel** package, part of the default R distribution, provides 
-parallel versions of the `apply`-type functions.
-
-Parallelisation is most straight-forward to implement for
-*embarrassingly parallel* problems, such as applying a function to
-elements of a list.
-
-The first step is to make a cluster from the available cores, here 2
-
-```r
-library(parallel)
-clus &lt;- makeCluster(2)
-```
-You can use `parallel::detectCores() - 1` on your own computer; `parallelly::availableCores() - 1` is safer to use in general.
+`Sys.sleep()` can not be used as it would not show in profiling output
 
 ---
 
-# parApply on Multiple Cores
+# Using profvis
 
-`parApply` is used exactly as `apply`, but has an additional
-argument to specify the cluster on which to run the code
-
-```r
-res &lt;- parApply(clus, M, 1, quantile, 0.75)
-```
-There are also special versions for applying to rows (R) and cols (C)
+Source the code to be profiled and pass the function call to be profiled to 
+`profvis()`
 
 ```r
-res &lt;- parRapply(clus, M, quantile, 0.75)
-res &lt;- parCapply(clus, M, mean)
+library(profvis)
+source("profiling-example.R")
+profvis(top_level())
 ```
+
+An interactive HTML document will open with the results.
+
+In RStudio this will open in the source pane, click "show in new window" button to open the document in a new window.
 
 ---
 
-# parLapply and parSapply
+class: middle
 
-Similarly `parLapply` and `parSapply` mirror `lapply` and `sapply`
+![:scale 80%, Screenshot of the profvis HTML output. At the bottom, a stacked set of horizontal bars along a time axis, representing the length of time in each function. At a given time, the top-level function is at the bottom of the stack with each nested function stacked on top. The source code is shown at the top of the screenshot, with a horizontal bar for each line, showing the time spent. Interpretation on next slide](profiling-example.png)
+---
+
+# Interpretation
+
+The bottom plot is called a *flame graph*. The yellow bars correspond to lines in the source file shown above this graph, for which time has been recorded.
+
+In the overall time of 250ms we see 
+ - 4 equal-sized blocks for each pause of 0.1s
+ - Nearly all time is spent in the top-level function
+ - Nearly half the time is spent in the mid-level function
+ - Nearly half the time is also spent in the bottom-level function as it is called twice
+ - There is one sample where the `cmp` function is being executed (called by `compiler:::tryCmpfun`). When a function is first called, R attempts to compile it to byte code so that it can call the compiled version in subsequent calls.
+ 
+No changes in memory are recorded as no objects are created or deleted.
+
+---
+
+# Data tab
+
+The Data tab shows a table with the memory and time usage for each function call. The nested calls can be expanded/collapsed to show/hide the corresponding lines.
+![:scale 75%, Screenshot of the data tab in the profvis HTML output. A table with columns "Code" (function name), "File" (name of source file containing function), "Memory (MB)" and "Time (ms)".](profiling-example-data-tab.png)
+
+---
+
+# Memory profiling
+
+To illustrate memory profiling we can consider a loop that concatenates values.
+
+As it is a small code snippet, we can pass to profvis directly
+
 
 ```r
-parLapply(clus, l, mean)
-```
-
-```
-# $x
-# [1] 2
-# 
-# $y
-# [1] 5
-```
-
-```r
-parSapply(clus, l, mean)
-```
-
-```
-# x y 
-# 2 5
-```
-Any number of R commands can be run after the cluster has been created. At the end, run
-
-```r
-stopCluster(clus)
+profvis({
+  x &lt;- integer()
+  for (i in 1:10000) {
+    x &lt;- c(x, i)
+  }
+})
 ```
 
 ---
 
-# Exercise 2
+![Flame graph for profiling the contenation example. Interpretation on next slide.](profiling-memory.png)
+---
 
-The **efficient** package contains a function to simulate a game of snakes and 
-ladders, returning the number of rolls required to win.
+# `&lt;GC&gt;`
+
+As expected, the majority of the time is spent within `c()`, but we also see a lot time spent in `&lt;GC&gt;`, the garbage collector.
+
+In the memory column next to the corresponding line in the source code, we see a bar to left labelled -123.0 and a bar to the right labelled 137.2. This means that 137 MB of memory was allocated and 123 MB of memory was released.
+
+This is because each call to `c()` causes a new copy of `x` to be created.
+
+Memory profiling can help to identify short-lived objects that might be avoided by changes to the code.
+
+---
+
+# General principles
 
 
-Parallelise the following code:
+* Avoid optimizing too soon
+  - Get the code right first.
+  - Write tests to validate changes to the code
+* Avoid over-optimization
+  - Focus on the bottlenecks
+  - Keep an eye on the units - will real gains be made?
+  - Think about maintainability: readability, simplicity, dependencies
+* Avoid anonymous functions
+  - Name utility functions to see them in the profile
+* Use microbenchmarking to assess alternative implementations
+  
+---
+
+# Monopoly
+
+.pull-left-66[In the monopoly board game, players roll two die to move round the board. Players buy assets on which they can charge rent or taxes and aim to make the most money.
+
+The squares on the board represent
+- Properties, train stations or utility companies to buy
+- Events that trigger an action, e.g. paying a tax or going to jail
+
+The *efficient* package contains the `simulate_monopoly()` function to simulate game play, which we'll use to practice profiling.]
+.pull-right-33[
+&lt;br&gt;
+&lt;br&gt;
+![Photo showing part of the monopoly game board, from the corner with the "Go" square.](monopoly.jpg)
+]
+
+---
+
+# Your Turn
+
+1. Install the **efficient** package with the following code to keep the code source files:
+```r
+remotes::install_github("csgillespie/efficient",
+                         INSTALL_opts = "--with-keep.source")
+```
+2. Use `profvis()` to profile `simulate_monopoly(10000)`. Explore the output. Which parts of the code are slow?
+3. Most of the time is spent in the underlying function `move_square()`. Use `View(move_square)` to view the source code. Make two copies of the code in separate .R files and name the functions `move_square` and `move_square2`. Edit `move_square2` to speed up the slow parts of the code. (Go to next slide for testing the updates)
+
+---
+
+Use `bench::mark()` to test your changes. Create a wrapper for each function to run it `n` times with different seeds, e.g.
 
 ```r
-library(efficient)
-N &lt;- 10
-nrolls &lt;- sapply(seq_len(N), snakes_ladders)
+run_move_square &lt;- function(n){
+  x &lt;- numeric(n)
+  for (i in 1:n) {
+    set.seed(i)
+    x[i] &lt;- move_square(1)
+  }
+  x
+}
 ```
+Then run `bench::mark(run_move_square(n), run_move_square2(n))` for suitable `n`. This ensures the new code gives the same results!
+
+When you think you have done as much improvement as you can, compare `profvis(run_move_square2(10000))` with `profvis(run_move_square(10000))`.
 
 ---
 
