@@ -106,7 +106,7 @@ Open the `tests.R` script. Using `expect_equal()` add some tests in `tests.R`
 to test the following:
 
  - a sample of 100,000 from N(0, 1) gives approximately slope 1, intercept 0
- - a sample of 100,000 from N(0, 1/2) gives approximately slope 2, intercept 0
+ - a sample of 100,000 from N(0, 1/4) gives approximately slope 2, intercept 0
  - sample of 100,000 from N(2, 1) gives approximately slope 1, intercept -2
 
 Use the `tol` argument in `expect_equal` to set a tolerance of 0.01.

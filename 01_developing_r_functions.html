@@ -29,6 +29,12 @@ class: center, middle, inverse, title-slide
 
 
 
+layout: true
+
+.footer[&amp;nbsp;&amp;nbsp; [github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)]
+
+---
+
 class: inverse middle
 
 # Developing R Functions
@@ -185,7 +191,7 @@ It is safest to use arguments rather than depend on global variables!
 
 # Unspecified Arguments
 
-`...` or the *ellipsis* allow unspecified arguments to be passed to the function. 
+`...` or the *ellipsis* allow unspecified arguments to be passed in.
 
 This device is used by functions that work with arbitrary numbers of objects, e.g. 
 
@@ -242,7 +248,7 @@ Similarly the objects could be concatenated using `c()`
 
 # Return Values
 
-By default, functions return the object created by the last line of code
+By default, functions return the object from the last line of code
 
 ```r
 f &lt;- function(x) {
@@ -251,7 +257,7 @@ f &lt;- function(x) {
 }
 ```
 
-Alternatively `return()` can be used to terminate the function and return
+Alternatively `return()` can be used to terminate early and return
 a given object
 
 ```r
@@ -293,7 +299,7 @@ Writing to file is usually best done outside a function.
 
 ---
 
-# RStudio "`Extract Function`"
+# RStudio Helper
 
 RStudio has a helper to turn code into a function:
 
@@ -334,9 +340,9 @@ Run the `qq` chunk and test your function on the `t-QQ` chunk.
 
 ---
 
-# Using Functions From Other Packages
+# Functions From Other Packages
 
-In our own functions (outside of packages), it is possible to use `library`
+In functions outside of packages, it is possible to use `library()`
 
 
 ```r
@@ -347,8 +353,7 @@ scale_rows &lt;- function(X){
 }
 ```
 
-But this loads the entire package, potentially leading to clashes with 
-functions from other packages. It is better to use the **import** package:
+But this loads the entire package, potentially causing conflicts. It is better to use the **import** package:
 
 
 ```r
@@ -397,9 +402,7 @@ ggscatter(mtcars, x = mpg, y = disp)
 
 # Externalizing Function Code
 
-It is a good idea to separate function code from analysis code.
-
-Put related functions together and source as required
+It is a good idea to separate function code from analysis code and source as required, e.g.
 
 ```r
 source("modelFunctions.R")
@@ -409,7 +412,8 @@ The **import** package enables only necessary, top-level functions to be
 imported to the global workspace:
 
 ```r
-import::here(poissonModel, quasiPoissonModel, .from = "modelFunctions.R")
+import::here(poissonModel, quasiPoissonModel,
+             .from = "modelFunctions.R")
 ```
 
 In either case, `import::from` commands can be put outside the function
@@ -428,7 +432,7 @@ groupSort &lt;- function(x, g) {
     x[ord]
 }
 ```
-The **docstring** package enables *roxygen* comments to be turned into a 
+The **docstring** package turns *roxygen* comments into a 
 help file
 
 ```r
@@ -546,14 +550,12 @@ Open the `tests.R` script. Using `expect_equal()` add some tests for the
 following
 
  - a sample of 100,000 from N(0, 1) gives approximately slope 1, intercept 0
- - a sample of 100,000 from N(0, 1/2) gives approximately slope 2, intercept 0
- - sample of 100,000 from N(2, 1) gives approximately slope 1, intercept -2
+ - a sample of 100,000 from N(0, 1/4) gives approximately slope 2, intercept 0
+ - a sample of 100,000 from N(2, 1) gives approximately slope 1, intercept -2
 
-Use the `tol` argument in `expect_equal` to set a tolerance of 0.01.
+Set the tolerance in `expect_equal()` with `tol = 0.01`.
 
-Run the `tests` chunk of `exercises.Rmd` to run your tests with `test_file`.
-
-Try changing the expected tolerance to get a test to fail.
+Run the `tests` chunk of `exercises.Rmd` to run your tests. Try changing the expected tolerance to get a test to fail.
 
 ---
 
@@ -680,9 +682,7 @@ Similarly `suppressMessages()` will suppress messages.
 
 ---
 
-# Catching Errors/Warnings
-
-The **purrr** package has various functions to catch issues.
+# purrr Functions to Catch Issues
 
 `possibly()` lets you modify a function to return a specified value when there 
 is an error
@@ -737,6 +737,7 @@ traceback()
 # 1: f1(10)
 ```
 
+--
 In RStudio, if "`Debug`" &gt; "`On Error`" &gt;  "`Error Inspector`" is checked 
 and the traceback has at least 3 calls, the option to show traceback is 
 presented
@@ -751,7 +752,7 @@ Note here about the importance of separating tasks into smaller functions
 
 # `debugonce()`
 
-`debugonce()` flags a function for debugging the next time it is called
+`debugonce()` flags a function for debugging when it is next called
 
 
 ```r
@@ -807,16 +808,18 @@ Start debugging from breakpoints
 # RStudio's Rerun with Debug
 
 The "`Rerun with Debug`" option will rerun the command that created the 
-error and enter debug mode where the error occurred.
+error and enter debug mode where the error occurs.
 
 Good points:
  - Easy to enter debug mode (when option shown)
- - Can click in Traceback pane to view objects at any point in the call stack
+ - Can click in the Traceback pane to view objects at any point in the call stack
  
 Bad points:
  - May have gone past source of error (use breakpoints instead)
  - May enter deeply nested function: use `recover()` to select an earlier 
  entry point
+
+???
 
 Alternatively use `options(error = recover)`, 
 run code to debug, then set `options(error = NULL)`.
@@ -825,12 +828,12 @@ run code to debug, then set `options(error = NULL)`.
 
 # Exercise 5
 
-Open the function `debug_practice.R` and source the example function `f()`.
+Open `debug_practice.R` and source the function `f()`.
 
 Try to run `f(10)` - there's an error! Use `traceback()` to see which 
 function call generated the error, then fix the problem. 
 
-Run `f(10)` again - there is another error! Can you fix this directly?
+Run `f(10)` again - there is another error! Can you fix this directly given the error message?
 
 Try running `f(1)` - is the result what you expected? Use `debugonce()` to 
 setting debugging on `f()` and re-run `f(1)`. Step through the function,
@@ -845,8 +848,7 @@ function to give a sensible result for any integer.
 <script>var slideshow = remark.create({
 "highlightStyle": "googlecode",
 "highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+"countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
