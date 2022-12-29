@@ -1,0 +1,81 @@
+---
+title: "Advanced R"
+author: <br>Dr Heather Turner<br>Research Software Engineering Fellow, University of Warwick, UK<br>
+date: 30 December 2022
+output:
+  xaringan::moon_reader:
+    chakra: libs/remark-latest.min.js
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    css: ["default", "extra.css"]
+    lib_dir: libs
+    keep_md: true
+    nature:
+      beforeInit: "macros.js"
+      highlightStyle: googlecode
+      highlightLines: true
+      countIncrementalSlides: false
+always_allow_html: yes      
+---
+
+# Background
+
+Education
+ - BSc Applied Statistics, Reading
+ - PhD Statistics, Exeter
+
+Career History
+ - 6 yrs Researcher, Statistics, Warwick
+ - 1 yr  Statistician, Drug Discovery, Pfizer
+ - 10 yrs freelance statistician/programmer
+
+Current
+   - Research Software Engineer/Associate Professor, Warwick
+   
+---
+
+# Research Software Engineering
+
+New career path focusing on computational support for research
+
+Role may involve a range of activities
+  - Software development (research code, end-user software, apps)
+  - Data management (databases, archiving)
+  - High performance computing (systems admin, coding)
+  - Training (programming, software engineering, open science)
+  
+https://society-rse.org/
+  
+---
+
+# Fellowship Project
+
+Sustainability and EDI (Equality, Diversity and Inclusion) in the R Project
+- Contributing to the R project through code, infrastructure & outreach
+  - https://contributor.r-project.org/ 
+- Contributing to CRAN packages
+- Capacity-building in R and data science at Warwick
+- Community-building in the R and RSE communities with a focus on EDI.
+
+---
+
+# R Community
+
+Supportive online/in-person communities
+ - R User Groups https://benubah.github.io/r-community-explorer/ 
+ - R-Ladies https://rladies.org/
+ - https://www.rfordatasci.com/
+Many great (free resources)
+ - https://bookdown.org/
+ - https://www.learnr4free.com/ 
+ 
+https://www.heatherturner.net/talks/r-community
+ 
+---
+
+# Advanced R Course
+
+1. Developing R Functions
+
+2. Efficient Code
+
+[github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)

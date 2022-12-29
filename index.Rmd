@@ -5,6 +5,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Advanced R Workshop, IISA 2022
 
-1. Developing R Functions [slides](https://hturner.github.io/IISA2022/01_developing_r_functions.html#1) [exercises](/exercises) [solutions](/solutions)
+[intro](https://hturner.github.io/IISA2022/00_advanced_r.html#1)
 
-2. Efficient Code [slides](https://hturner.github.io/IISA2022/02_efficient_code.html#1) [exercises](/exercises) [solutions](/solutions)
+1. Developing R Functions:  [slides](https://hturner.github.io/IISA2022/01_developing_r_functions.html#1)  
+
+2. Efficient Code: [slides](https://hturner.github.io/IISA2022/02_efficient_code.html#1)
+
+[exercises](/exercises) | [solutions](/solutions)
