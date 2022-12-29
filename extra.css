@@ -84,12 +84,11 @@
   padding: 0;
   float: left;
   width: 63%;
-  clear: left;
 }
 .pull-right-33 {
+  padding: 0;
   float: right;
   width: 30%;
-  clear: right;
 }
 
 .pull-left-33 {
@@ -102,6 +101,13 @@
   float: right;
   width: 63%;
   clear: right;
+}
+
+.pull-left-100 {
+  padding: 0;
+  float: left;
+  width: 100%;
+  clear: left;
 }
 
 /* more padding in table cells and bulleted lists */
@@ -180,4 +186,23 @@ kbd {
 
 pre {
   margin:0;
+}
+
+
+.footer {
+    color: #000000;
+    position: fixed;
+    left: 20px;
+    bottom: 10px;
+    text-align: left;
+    width: 90%;
+}
+
+.inverse .footer {
+    visibility: hidden;
+}
+
+a, a > code {
+    color: #ff8c00;
+    text-decoration: none;
 }
