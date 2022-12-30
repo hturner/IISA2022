@@ -1,7 +1,7 @@
 ---
 title: "Advanced R"
-author: <br>Dr Heather Turner<br>Research Software Engineering Fellow, University of Warwick, UK<br>
-date: 30 December 2022
+author: <br>Dr Heather Turner<br>Research Software Engineering Fellow, University of Warwick, UK
+date: 30 December 2022<br><br>[hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)
 output:
   xaringan::moon_reader:
     chakra: libs/remark-latest.min.js
@@ -17,32 +17,15 @@ output:
 always_allow_html: yes      
 ---
 
-# My Background
-
-Education
- - BSc Applied Statistics, Reading
- - PhD Statistics, Exeter
-
-Career History
- - 6 yrs Researcher, Statistics, Warwick
- - 1 yr  Statistician, Drug Discovery, Pfizer
- - 10 yrs freelance statistician/programmer
-
-Current
-   - Research Software Engineer/Associate Professor, Warwick
-   
----
-
 # Research Software Engineering
 
-New profession focusing on computational support for research
-
-Role may involve a range of activities
+May involve a range of activities
   - Software development (research code, end-user software, web apps)
   - Data management (databases, archiving)
   - High performance computing (systems admin, coding)
   - Training (programming, software engineering, open science)
-  
+
+Developed as a separate profession over past decade
 https://society-rse.org/
   
 ---
@@ -79,4 +62,6 @@ https://www.heatherturner.net/talks/r-community
 
 2. Efficient Code
 
+.big[
 `r fontawesome::fa("link")` &nbsp; [hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)
+]

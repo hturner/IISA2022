@@ -203,6 +203,15 @@ pre {
 }
 
 a, a > code {
-    color: #ff8c00;
+    color: #4667b4;
     text-decoration: none;
+}
+
+.inverse a, a > code {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.big {
+    font-size: 36px;
 }
