@@ -17,7 +17,7 @@ output:
 always_allow_html: yes      
 ---
 
-# Background
+# My Background
 
 Education
  - BSc Applied Statistics, Reading
@@ -35,10 +35,10 @@ Current
 
 # Research Software Engineering
 
-New career path focusing on computational support for research
+New profession focusing on computational support for research
 
 Role may involve a range of activities
-  - Software development (research code, end-user software, apps)
+  - Software development (research code, end-user software, web apps)
   - Data management (databases, archiving)
   - High performance computing (systems admin, coding)
   - Training (programming, software engineering, open science)
@@ -47,7 +47,7 @@ https://society-rse.org/
   
 ---
 
-# Fellowship Project
+# My Fellowship Project
 
 Sustainability and EDI (Equality, Diversity and Inclusion) in the R Project
 - Contributing to the R project through code, infrastructure & outreach
@@ -61,9 +61,10 @@ Sustainability and EDI (Equality, Diversity and Inclusion) in the R Project
 # R Community
 
 Supportive online/in-person communities
- - R User Groups https://benubah.github.io/r-community-explorer/ 
- - R-Ladies https://rladies.org/
- - https://www.rfordatasci.com/
+ - R User Groups: https://benubah.github.io/r-community-explorer/ 
+ - R-Ladies: https://rladies.org/
+ - R for Data Science: https://www.rfordatasci.com/
+ 
 Many great (free resources)
  - https://bookdown.org/
  - https://www.learnr4free.com/ 
@@ -78,4 +79,4 @@ https://www.heatherturner.net/talks/r-community
 
 2. Efficient Code
 
-[github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)
+`r fontawesome::fa("link")` &nbsp; [hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)

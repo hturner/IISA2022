@@ -31,7 +31,7 @@ class: center, middle, inverse, title-slide
 
 layout: true
 
-.footer[&amp;nbsp;&amp;nbsp; [github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)]
+.footer[<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> &amp;nbsp; [hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)]
 
 ---
 
@@ -142,9 +142,9 @@ for (i in 1:3){ z &lt;- c(z,1); print(tracemem(z)) }
 ```
 
 ```
-# [1] "&lt;000001D1447E2C98&gt;"
-# [1] "&lt;000001D149E7E2D8&gt;"
-# [1] "&lt;000001D1453A05A8&gt;"
+# [1] "&lt;0000029F911378A0&gt;"
+# [1] "&lt;0000029F8F6BCA68&gt;"
+# [1] "&lt;0000029F935DD2E8&gt;"
 ```
 --
 
@@ -153,7 +153,7 @@ z &lt;- numeric(2); print(tracemem(z))
 ```
 
 ```
-# [1] "&lt;000001D146418E98&gt;"
+# [1] "&lt;0000029F8E4C7FB8&gt;"
 ```
 
 
@@ -162,9 +162,9 @@ for (i in 1:2){z[i] &lt;- i;print(tracemem(z))}
 ```
 
 ```
-# tracemem[0x000001d146418e98 -&gt; 0x000001d14ce0ed08]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call &lt;Anonymous&gt; evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file &lt;Anonymous&gt; &lt;Anonymous&gt; do.call rebuild build force toJSON doTryCatch tryCatchOne tryCatchList tryCatch &lt;Anonymous&gt; handler doTryCatch tryCatchOne tryCatchList tryCatch try &lt;Anonymous&gt; evalq evalq doTryCatch tryCatchOne tryCatchList doTryCatch tryCatchOne tryCatchList tryCatch 
-# [1] "&lt;000001D14CE0ED08&gt;"
-# [1] "&lt;000001D14CE0ED08&gt;"
+# tracemem[0x0000029f8e4c7fb8 -&gt; 0x0000029f8eb7f4e8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call &lt;Anonymous&gt; evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file &lt;Anonymous&gt; &lt;Anonymous&gt; do.call rebuild build force toJSON doTryCatch tryCatchOne tryCatchList tryCatch &lt;Anonymous&gt; handler doTryCatch tryCatchOne tryCatchList tryCatch try &lt;Anonymous&gt; evalq evalq doTryCatch tryCatchOne tryCatchList doTryCatch tryCatchOne tryCatchList tryCatch 
+# [1] "&lt;0000029F8EB7F4E8&gt;"
+# [1] "&lt;0000029F8EB7F4E8&gt;"
 ```
 
 ???
@@ -208,6 +208,7 @@ Run the two alternatives with `bench::mark`. This function
  - Runs alternatives &amp;ge; 1 time; at most enough times to take 0.5s
  - Makes sure the two expressions return the same result!  
  
+--
 
 ```r
 library(bench)
@@ -223,8 +224,8 @@ library(bench)
 # # A tibble: 2 × 6
 #   expression             min   median `itr/sec` mem_alloc `gc/sec`
 #   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-# 1 grow(5000)            48ms   62.1ms      9.51    95.6MB    20.9 
-# 2 pre_specify(5000)    167µs  199.8µs   4451.      55.9KB     4.00
+# 1 grow(5000)            41ms   50.5ms      15.7    95.6MB    47.2 
+# 2 pre_specify(5000)    158µs  185.9µs    4962.     56.1KB     6.00
 ```
 
 * `GC` is the garbage collector which tidies up deleted objects
@@ -254,15 +255,15 @@ When thinking about how our code scales to bigger, we need to consider what we m
 
 --
  - number of rows or number of columns?
- 
+
 --
  - number of observations or number of factor levels?
+ 
+`bench::press()` compares a function over a grid of parameters 
  
 ---
 
 # `bench::press()`
- 
-`bench::press()` compares a function over a grid of parameters
 
 
 ```r
@@ -296,10 +297,10 @@ bench::press(n = c(10, 100), k = c(10, 1),
 # # A tibble: 4 × 8
 #   expression                  n     k    min median itr/s…¹ mem_a…²
 #   &lt;bch:expr&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;bch:&gt; &lt;bch:&gt;   &lt;dbl&gt; &lt;bch:b&gt;
-# 1 gl(n, k, length = 1000)    10    10    7µs  8.8µs 109523.  4.39KB
-# 2 gl(n, k, length = 1000)   100    10 17.5µs 19.2µs  47864. 11.05KB
-# 3 gl(n, k, length = 1000)    10     1  5.9µs  7.4µs 103005.  3.95KB
-# 4 gl(n, k, length = 1000)   100     1 12.2µs 14.2µs  61953.  7.53KB
+# 1 gl(n, k, length = 1000)    10    10  5.9µs  7.4µs 127815.  4.39KB
+# 2 gl(n, k, length = 1000)   100    10 14.2µs 18.3µs  53294. 11.05KB
+# 3 gl(n, k, length = 1000)    10     1  5.3µs  6.6µs 144208.  3.95KB
+# 4 gl(n, k, length = 1000)   100     1 10.6µs 11.4µs  82170.  7.53KB
 # # … with 1 more variable: `gc/sec` &lt;dbl&gt;, and abbreviated variable
 # #   names ¹​`itr/sec`, ²​mem_alloc
 ```
@@ -741,10 +742,10 @@ In the overall time of 250ms we see :
  - 4 equal-sized blocks for each pause of 0.1s
  - Nearly all time is spent in the top-level function
  - Nearly half the time is spent in the mid-level function
- - Nearly half the time is also spent in the bottom-level function as it is called twice
- - There is one sample where the `cmp` function is being executed (called by `compiler:::tryCmpfun`). When a function is first called, R attempts to compile it to byte code so that it can call the compiled version in subsequent calls.
+ - Nearly half the time is also spent in the bottom-level function
+ - The `cmp` function is called as R tries to compile new functions so that it can call the compiled version in subsequent calls.
  
-No changes in memory are recorded as no objects are created or deleted.
+No objects are created or deleted: no memory changes.
 
 ---
 
@@ -818,7 +819,7 @@ iii. Most of the time is spent in the function `move_square()`. Use `View(move_s
 
 # Exercise 3 (continued)
 
-Use `bench::mark()` to test your changes. Create a wrapper to run a specified move square function `n` times with different seeds:
+Create a wrapper to run a specified move square function `n` times with different seeds:
 
 ```r
 run &lt;- function(n, fun){
@@ -830,9 +831,9 @@ run &lt;- function(n, fun){
   x
 }
 ```
-Then run `bench::mark(run(n, move_square), run(n, move_square2))` for `n = 1000`.
+Run `bench::mark(run(n, move_square), run(n, move_square2))` with `n = 1000` to test your changes. 
 
-When you have done as much improvement as you can, compare `profvis(run(n, move_square))` with `profvis(run(n, move_square2))`.
+Finally, compare `profvis(run(n, move_square))` with `profvis(run(n, move_square2))`.
 
 ---
 
@@ -848,7 +849,7 @@ When you have done as much improvement as you can, compare `profvis(run(n, move_
   - Think about maintainability: readability, simplicity, dependencies
 * Avoid anonymous functions
   - Name utility functions to see them in the profile
-* Use microbenchmarking to assess alternative implementations
+* Use benchmarking to assess alternative implementations
 
 ---
 
@@ -886,7 +887,6 @@ creates helpfiles from roxygen comments.
 | Shared data             | in `data/`, roxygen in `R/`                         | -                                 |
 | Long-form docs          | `.Rmd` in vignettes/                                   | -                                 |
 | Package metadata        | `DESCRIPTION` file                                     | -                                 |
-| Package intro           | `README.md`                                            | -                                 |
 | Package news            | `NEWS.md`                                              | -                                 |
 
 ???
@@ -897,9 +897,11 @@ import::here
 
 # Chennai Meetup
 
-https://www.meetup.com/en-AU/chennai-r-user-group/
+https://www.meetup.com/chennai-r-user-group/
 
-![Creating an R Package: Why and How? Speaker: Dr Heather Turner. Date: Friday 6 Jan 2023. Hybrid: Zoom + OMR, Chennai (TBD). 6-7pm lecture, 7-8pm networking and refreshments. Special thanks to our sponsors Princeps Technologies Inc](chennai_meetup.png)
+&lt;center&gt;
+&lt;img alt = "Creating an R Package: Why and How? Speaker: Dr Heather Turner. Date: Friday 6 Jan 2023. Hybrid: Zoom + OMR, Chennai (TBD). 6-7pm lecture, 7-8pm networking and refreshments. Special thanks to our sponsors Princeps Technologies Inc" src = "chennai_meetup.png" width = 90%&gt;
+&lt;/center&gt;
 
 ---
 

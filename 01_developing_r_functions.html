@@ -31,13 +31,13 @@ class: center, middle, inverse, title-slide
 
 layout: true
 
-.footer[&amp;nbsp;&amp;nbsp; [github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)]
+.footer[<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> &amp;nbsp; [hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)]
 
 ---
 
 class: inverse middle
 
-# Developing R Functions
+# Writing R Functions
 
 ---
 
@@ -46,7 +46,7 @@ class: inverse middle
 Functions are defined by two components:
 
  - the arguments of the function
- - the body of the function that computes the result
+ - the body of the function that uses the arguments to compute a result
  
 They are created using `function()`
 
@@ -76,6 +76,7 @@ args(rnorm)
 ```
 the arguments are `n`, `mean` and `sd`.
 
+--
 `mean` and `sd` have been given default values in the function definition, but `n` has not, so the function fails if the user does not pass a value to `n`
 
 
@@ -110,6 +111,7 @@ rnorm(5, sd = 10)
 # [1] -8.205  4.874  7.383  5.758 -3.054
 ```
 
+--
 So, naming and order is important! Some guidelines:
 
 - put compulsory arguments first, e.g. data
@@ -119,9 +121,60 @@ So, naming and order is important! Some guidelines:
 
 ---
 
-# Using Arguments
+# Return Values
 
-Arguments are used as objects in the function code.
+By default, functions return the object from the last line of code
+
+```r
+f &lt;- function(x) {
+    x &lt;- x + 1
+    log(x)
+}
+```
+
+--
+Alternatively `return()` can be used to terminate early and return
+a given object
+
+```r
+f &lt;- function(x) {
+    if (all(x &gt; 0)) return(log(x))
+    x[x &lt;= 0] &lt;- 0.1
+    log(x)
+}
+```
+
+Multiple objects can be returned in a list.
+
+---
+
+# RStudio Helper
+
+RStudio has a helper to turn code into a function:
+
+1. Select the lines of code that will become the body of the function.
+2. Select "`Code`" &gt; "`Extract Function`" from the menu.
+3. Enter the name of the new function in the dialog box.
+4. Edit the arguments if required.
+5. Add/edit the last line to specify the return value.
+
+---
+
+# Exercise 1
+
+In the `qq_norm` chunk of `exercises.Rmd` there is some code to compute the 
+slope and intercept of the line to add to a quantile-quantile plot, comparing 
+sample quantiles against theoretical quantiles of a N(0, 1) distribution.
+
+Turn this code into a function named `qq_norm` taking the sample data as an 
+argument and returning the slope and intercept in a list.
+
+Run this chunk to source the function, then run the `normal-QQ` chunk which uses 
+the `qq_norm` function to compute parameters for an example plot.
+
+---
+
+# Function environment
 
 A new environment is created each time the function is called, separate 
 from the global workspace.
@@ -212,6 +265,7 @@ sum(1, 4, 10, 2)
 # [1] 17
 ```
 
+--
 It can also be used to pass on arguments to another function, e.g.
 
 ```r
@@ -243,33 +297,6 @@ f(x, y)
 ```
 Similarly the objects could be concatenated using `c()`
 
-
----
-
-# Return Values
-
-By default, functions return the object from the last line of code
-
-```r
-f &lt;- function(x) {
-    x &lt;- x + 1
-    log(x)
-}
-```
-
-Alternatively `return()` can be used to terminate early and return
-a given object
-
-```r
-f &lt;- function(x) {
-    if (all(x &gt; 0)) return(log(x))
-    x[x &lt;= 0] &lt;- 0.1
-    log(x)
-}
-```
-
-Multiple objects can be returned in a list.
-
 ---
 
 # Naming Functions
@@ -296,32 +323,6 @@ best practice to have a separate function for each task, e.g creating a
 plot or a table.
 
 Writing to file is usually best done outside a function.
-
----
-
-# RStudio Helper
-
-RStudio has a helper to turn code into a function:
-
-1. Select the lines of code that will become the body of the function.
-2. Select "`Code`" &gt; "`Extract Function`" from the menu.
-3. Enter the name of the new function in the dialog box.
-4. Edit the arguments if required.
-5. Add/edit the last line to specify the return value.
-
----
-
-# Exercise 1
-
-In the `qq_norm` chunk of `exercises.Rmd` there is some code to compute the 
-slope and intercept of the line to add to a quantile-quantile plot, comparing 
-sample quantiles against theoretical quantiles of a N(0, 1) distribution.
-
-Turn this code into a function named `qq_norm` taking the sample data as an 
-argument and returning the slope and intercept in a list.
-
-Run this chunk to source the function, then run the `normal-QQ` chunk which uses 
-the `qq_norm` function to compute parameters for an example plot.
 
 ---
 
@@ -353,6 +354,7 @@ scale_rows &lt;- function(X){
 }
 ```
 
+--
 But this loads the entire package, potentially causing conflicts. It is better to use the **import** package:
 
 
@@ -386,6 +388,7 @@ ggplot(mtcars, aes(x = mpg, y= disp)) +
     geom_point()
 ```
 
+--
 To emulate this, we have to need to **embrace** arguments
 
 
@@ -421,6 +424,12 @@ body to make the code easier to read.
 
 ---
 
+class: inverse middle
+
+# Documenting R Functions
+
+---
+
 # Documenting Functions
 
 Comments help to record what a function does
@@ -432,6 +441,8 @@ groupSort &lt;- function(x, g) {
     x[ord]
 }
 ```
+
+--
 The **docstring** package turns *roxygen* comments into a 
 help file
 
@@ -459,6 +470,23 @@ groupSort &lt;- function(x, g) {
 ![HTML documentation generated by docstring](docstring_help_file.png)
 
 For fuller documentation, see the **docstring** vignette: `vignette("docstring_intro")`.
+
+---
+
+# Exercise 3
+
+Copy the `qq` function to a new R script and save as `functions.R`. 
+
+Add roxygen comments at the start of the function body to define a title 
+and parameter documentation.
+
+Run the `documentation` chunk of `exercises.Rmd` to view your documentation.
+
+---
+
+class: inverse middle
+
+# Testing R Functions
 
 ---
 
@@ -530,18 +558,6 @@ test_file("tests.R")
 # [ FAIL 1 | WARN 0 | SKIP 0 | PASS 2 ]
 ```
 
-
----
-
-# Exercise 3
-
-Copy the `qq` function to a new R script and save as `functions.R`. 
-
-Add roxygen comments at the start of the function body to define a title 
-and parameter documentation.
-
-Run the `documentation` chunk of `exercises.Rmd` to view your documentation.
-
 ---
 
 # Exercise 4
@@ -607,6 +623,7 @@ zap(x)
 # Error in if (max(x) &lt; 1e+07) 0 else x: missing value where TRUE/FALSE needed
 ```
 
+--
 More helpful error message can be implemented using `stop`
 
 
@@ -704,6 +721,8 @@ poss_log("a")
 ```
 # [1] NA
 ```
+
+--
 `safely()` works in a similar way but returns a list with elements `"result"` 
 and `"error"`, so you can record the error message(s). 
 

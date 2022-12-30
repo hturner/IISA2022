@@ -1,6 +1,6 @@
 # Advanced R Workshop, IISA 2022
 
-Material for the [Advanced R](https://www.intindstat.org/conference2022/shortCourses) workshop held at the 2022 International Indian Statistical Association Conference, [IISA 2022] (https://www.intindstat.org/conference2022/index)
+Material for the [Advanced R](https://www.intindstat.org/conference2022/shortCourses) workshop held at the 2022 International Indian Statistical Association Conference, [IISA 2022](https://www.intindstat.org/conference2022/index)
 
 ## Overview
 

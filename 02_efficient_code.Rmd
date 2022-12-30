@@ -46,7 +46,7 @@ set.seed(1)
 
 layout: true
 
-.footer[&nbsp;&nbsp; [github.com/hturner/IISA2022](https://github.com/hturner/IISA2022)]
+.footer[`r fontawesome::fa("link")` &nbsp; [hturner.github.io/IISA2022](https://hturner.github.io/IISA2022)]
 
 ---
 
@@ -201,6 +201,7 @@ Run the two alternatives with `bench::mark`. This function
  - Runs alternatives &ge; 1 time; at most enough times to take 0.5s
  - Makes sure the two expressions return the same result!  
  
+--
 ```{r benchmark, eval = TRUE}
 library(bench)
 (bm <- bench::mark(grow(5000), pre_specify(5000)))
@@ -230,15 +231,15 @@ When thinking about how our code scales to bigger, we need to consider what we m
 
 --
  - number of rows or number of columns?
- 
+
 --
  - number of observations or number of factor levels?
+ 
+`bench::press()` compares a function over a grid of parameters 
  
 ---
 
 # `bench::press()`
- 
-`bench::press()` compares a function over a grid of parameters
 
 ```{r}
 bench::press(n = c(10, 100), k = c(10, 1),
@@ -575,10 +576,10 @@ In the overall time of 250ms we see :
  - 4 equal-sized blocks for each pause of 0.1s
  - Nearly all time is spent in the top-level function
  - Nearly half the time is spent in the mid-level function
- - Nearly half the time is also spent in the bottom-level function as it is called twice
- - There is one sample where the `cmp` function is being executed (called by `compiler:::tryCmpfun`). When a function is first called, R attempts to compile it to byte code so that it can call the compiled version in subsequent calls.
+ - Nearly half the time is also spent in the bottom-level function
+ - The `cmp` function is called as R tries to compile new functions so that it can call the compiled version in subsequent calls.
  
-No changes in memory are recorded as no objects are created or deleted.
+No objects are created or deleted: no memory changes.
 
 ---
 
@@ -651,7 +652,7 @@ iii. Most of the time is spent in the function `move_square()`. Use `View(move_s
 
 # Exercise 3 (continued)
 
-Use `bench::mark()` to test your changes. Create a wrapper to run a specified move square function `n` times with different seeds:
+Create a wrapper to run a specified move square function `n` times with different seeds:
 ```{r, eval = FALSE}
 run <- function(n, fun){
   x <- numeric(n)
@@ -662,9 +663,9 @@ run <- function(n, fun){
   x
 }
 ```
-Then run `bench::mark(run(n, move_square), run(n, move_square2))` for `n = 1000`.
+Run `bench::mark(run(n, move_square), run(n, move_square2))` with `n = 1000` to test your changes. 
 
-When you have done as much improvement as you can, compare `profvis(run(n, move_square))` with `profvis(run(n, move_square2))`.
+Finally, compare `profvis(run(n, move_square))` with `profvis(run(n, move_square2))`.
 
 ---
 
@@ -680,7 +681,7 @@ When you have done as much improvement as you can, compare `profvis(run(n, move_
   - Think about maintainability: readability, simplicity, dependencies
 * Avoid anonymous functions
   - Name utility functions to see them in the profile
-* Use microbenchmarking to assess alternative implementations
+* Use benchmarking to assess alternative implementations
 
 ---
 
@@ -718,7 +719,6 @@ creates helpfiles from roxygen comments.
 | Shared data             | in `data/`, roxygen in `R/`                         | -                                 |
 | Long-form docs          | `.Rmd` in vignettes/                                   | -                                 |
 | Package metadata        | `DESCRIPTION` file                                     | -                                 |
-| Package intro           | `README.md`                                            | -                                 |
 | Package news            | `NEWS.md`                                              | -                                 |
 
 ???
@@ -729,9 +729,11 @@ import::here
 
 # Chennai Meetup
 
-https://www.meetup.com/en-AU/chennai-r-user-group/
+https://www.meetup.com/chennai-r-user-group/
 
-![Creating an R Package: Why and How? Speaker: Dr Heather Turner. Date: Friday 6 Jan 2023. Hybrid: Zoom + OMR, Chennai (TBD). 6-7pm lecture, 7-8pm networking and refreshments. Special thanks to our sponsors Princeps Technologies Inc](chennai_meetup.png)
+<center>
+<img alt = "Creating an R Package: Why and How? Speaker: Dr Heather Turner. Date: Friday 6 Jan 2023. Hybrid: Zoom + OMR, Chennai (TBD). 6-7pm lecture, 7-8pm networking and refreshments. Special thanks to our sponsors Princeps Technologies Inc" src = "chennai_meetup.png" width = 90%>
+</center>
 
 ---
 
