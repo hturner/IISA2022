@@ -14,7 +14,7 @@ Writing functions in R enables you to work more efficiently by writing code for 
 
 ## Schedule
 
-1:30 - 3:00 Part I: [slides](https://hturner.github.io/IISA2022/01_developing_r_functions.html#1) | [exercises](/exercises)
+1:30 - 3:00 Part I: [slides](https://hturner.github.io/IISA2022/01_developing_r_functions.html#1) | [exercises](https://github.com/hturner/IISA2022/tree/main/exercises)
 
  * [Opening Remarks](https://hturner.github.io/IISA2022/00_advanced_r.html#1)
  * [Developing R Functions](https://hturner.github.io/IISA2022/01_developing_r_functions.html#1)
@@ -36,7 +36,7 @@ Writing functions in R enables you to work more efficiently by writing code for 
      * Profiling code
   * Going further: outlook to package development
   
-[Solutions](/solutions) to exercises in both parts.
+[Solutions](https://github.com/hturner/IISA2022/tree/main/solutions) to exercises in both parts.
 
 ## Pre-requisites
 
