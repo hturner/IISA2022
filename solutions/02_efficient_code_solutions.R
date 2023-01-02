@@ -26,6 +26,7 @@ nr <- 10
 nc <- 50
 bm <- bench::mark(one(nr, nc), two(nr, nc))
 bm
+plot(bm)
 
 
 # Exercise 2 --------------------------------------------------------------
@@ -70,7 +71,8 @@ two <- function(n){ # n: the number of values to sample
 }
 
 n <- 10000
-bench::mark
+bm <- bench::mark(one(n), two(n))
+plot(bm)
 
 # Exercise 3 --------------------------------------------------------------
 
